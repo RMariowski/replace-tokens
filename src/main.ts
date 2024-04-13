@@ -1,5 +1,6 @@
 import * as core from "@actions/core";
 import { replaceTokens } from "./replace";
+import { MissingVarLog } from "./missingVarLog";
 
 function getFiles(): string[] {
   let files =
@@ -14,15 +15,24 @@ function getFiles(): string[] {
   return [files];
 }
 
+function getMissingVarLog(): MissingVarLog {
+    const value = core.getInput("missingVarLog") as MissingVarLog;
+    return Object.values(MissingVarLog).includes(value) ? value : MissingVarLog.Off;
+}
+
 async function run() {
   try {
     const tokenPrefix = core.getInput("tokenPrefix") || "#{";
     const tokenSuffix = core.getInput("tokenSuffix") || "}#";
     const files = getFiles();
+    const missingVarDefault = core.getInput("missingVarDefault") || "";
+    const missingVarLog = getMissingVarLog();
     const result = await replaceTokens(
       tokenPrefix,
       tokenSuffix,
-      Array.isArray(files) ? files : [files]
+      Array.isArray(files) ? files : [files],
+      missingVarDefault, 
+      missingVarLog
     );
     console.log(`Replaced tokens in files: ${result}`);
   } catch (error) {

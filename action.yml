@@ -2,6 +2,12 @@ name: "Replace tokens"
 description: "Replace tokens in files"
 author: "cschleiden"
 inputs:
+  missingVarDefault:
+    description: ""
+    default: ""
+  missingVarLog:
+    description: ""
+    default: "off"
   tokenPrefix:
     description: ""
     default: "#{"
