@@ -9,6 +9,7 @@ Simple GitHub Action to replace tokens in files.
 - `tokenSuffix` - Suffix to use when matching tokens, defaults to `}#`
 - `missingVarDefault` - The default value to use when a variable is not found, defaults to `""`
 - `missingVarLog` - The level to log variable not found messages. Accepted values `off`, `warn`, `error`, defaults to `off`
+- `additionalVariables` - A JSON formatted string containing additional variable values, defaults to `"{}"`
 
 ## Example
 

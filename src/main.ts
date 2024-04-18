@@ -27,12 +27,14 @@ async function run() {
     const files = getFiles();
     const missingVarDefault = core.getInput("missingVarDefault") || "";
     const missingVarLog = getMissingVarLog();
+    const additionalVariables = JSON.parse(core.getInput("additionalVariables") || "{}");
     const result = await replaceTokens(
       tokenPrefix,
       tokenSuffix,
       Array.isArray(files) ? files : [files],
       missingVarDefault, 
-      missingVarLog
+      missingVarLog, 
+      additionalVariables
     );
     console.log(`Replaced tokens in files: ${result}`);
   } catch (error) {

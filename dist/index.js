@@ -8734,7 +8734,8 @@ function run() {
             const files = getFiles();
             const missingVarDefault = core.getInput("missingVarDefault") || "";
             const missingVarLog = getMissingVarLog();
-            const result = yield (0, replace_1.replaceTokens)(tokenPrefix, tokenSuffix, Array.isArray(files) ? files : [files], missingVarDefault, missingVarLog);
+            const additionalVariables = JSON.parse(core.getInput("additionalVariables") || "{}");
+            const result = yield (0, replace_1.replaceTokens)(tokenPrefix, tokenSuffix, Array.isArray(files) ? files : [files], missingVarDefault, missingVarLog, additionalVariables);
             console.log(`Replaced tokens in files: ${result}`);
         }
         catch (error) {
@@ -8807,10 +8808,14 @@ exports.replaceTokens = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const replace_in_file_1 = __nccwpck_require__(5983);
 const missingVarLog_1 = __nccwpck_require__(1367);
-function replaceTokens(tokenPrefix, tokenSuffix, files, missingVarDefault, missingVarLog) {
+function replaceTokens(tokenPrefix, tokenSuffix, files, missingVarDefault, missingVarLog, additionalVariables) {
     return __awaiter(this, void 0, void 0, function* () {
         const fromRegEx = new RegExp(`${escapeDelimiter(tokenPrefix)}(.+?)${escapeDelimiter(tokenSuffix)}`, "gm");
         const matchRegEx = new RegExp(`${escapeDelimiter(tokenPrefix)}(.+?)${escapeDelimiter(tokenSuffix)}`);
+        const getVariable = (tokenName) => {
+            var _a;
+            return (_a = additionalVariables[tokenName]) !== null && _a !== void 0 ? _a : process.env[tokenName];
+        };
         const result = yield (0, replace_in_file_1.replaceInFile)({
             files,
             allowEmptyPaths: true,
@@ -8819,7 +8824,7 @@ function replaceTokens(tokenPrefix, tokenSuffix, files, missingVarDefault, missi
                 const m = match.match(matchRegEx);
                 if (m) {
                     const tokenName = m[1];
-                    const value = process.env[tokenName];
+                    const value = getVariable(tokenName);
                     if (!!value) {
                         return value;
                     }

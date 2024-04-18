@@ -7,7 +7,8 @@ export async function replaceTokens(
   tokenSuffix: string,
   files: string[],
   missingVarDefault: string,
-  missingVarLog: MissingVarLog
+  missingVarLog: MissingVarLog,
+  additionalVariables: any
 ) {
   const fromRegEx = new RegExp(
     `${escapeDelimiter(tokenPrefix)}(.+?)${escapeDelimiter(tokenSuffix)}`,
@@ -16,7 +17,11 @@ export async function replaceTokens(
   const matchRegEx = new RegExp(
     `${escapeDelimiter(tokenPrefix)}(.+?)${escapeDelimiter(tokenSuffix)}`
   );
-  
+
+  const getVariable = (tokenName: string): string | undefined => {
+    return additionalVariables[tokenName] ?? process.env[tokenName]
+  }
+
   const result = await replaceInFile({
     files,
     allowEmptyPaths: true,
@@ -25,7 +30,7 @@ export async function replaceTokens(
       const m = match.match(matchRegEx);
       if (m) {
         const tokenName = m[1];
-        const value = process.env[tokenName];
+        const value = getVariable(tokenName);
         if (!!value) {
           return value;
         }

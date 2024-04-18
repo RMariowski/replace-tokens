@@ -25,7 +25,7 @@ describe("basic functionality", () => {
 
     test("replaces single token in file", async () => {
         process.env["ACTOR"] = "world";
-        await replaceTokens("#{", "}#", ["test.txt"], "", MissingVarLog.Off);
+        await replaceTokens("#{", "}#", ["test.txt"], "", MissingVarLog.Off, "{}");
 
         const content = await fs.readFile('test.txt', 'utf8');
         expect(content).toBe("hello world");
@@ -33,7 +33,7 @@ describe("basic functionality", () => {
 
     test("replaces single token in file specified with glob", async () => {
         process.env["ACTOR"] = "world";
-        await replaceTokens("#{", "}#", ["*.txt"], "", MissingVarLog.Off);
+        await replaceTokens("#{", "}#", ["*.txt"], "", MissingVarLog.Off, "{}");
 
         const content = await fs.readFile('test.txt', 'utf8');
         expect(content).toBe("hello world");
@@ -45,14 +45,14 @@ describe("basic functionality", () => {
     test("replaces multiple token in file", async () => {
         process.env["GREETING"] = "hallo";
         process.env["ACTOR"] = "welt";
-        await replaceTokens("#{", "}#", ["test2.txt"], "", MissingVarLog.Off);
+        await replaceTokens("#{", "}#", ["test2.txt"], "", MissingVarLog.Off, "{}");
 
         const content = await fs.readFile('test2.txt', 'utf8');
         expect(content).toBe("hallo welt");
     });
 
     test("returns list of changed files", async () => {
-        const result = await replaceTokens("#{", "}#", ["*.txt"], "", MissingVarLog.Off);
+        const result = await replaceTokens("#{", "}#", ["*.txt"], "", MissingVarLog.Off, "{}");
 
         expect(result).toEqual([
             "test.txt", "test2.txt"
@@ -60,7 +60,7 @@ describe("basic functionality", () => {
     });
 
     test("returns only list of changed files", async () => {
-        const result = await replaceTokens("#{", "}#", ["test.txt"], "", MissingVarLog.Off);
+        const result = await replaceTokens("#{", "}#", ["test.txt"], "", MissingVarLog.Off, "{}");
 
         expect(result).toEqual([
             "test.txt"
@@ -68,7 +68,7 @@ describe("basic functionality", () => {
     });
 
     test("does not throw when no match", async () => {
-        const result = await replaceTokens("#{", "}#", [""], "", MissingVarLog.Off);
+        const result = await replaceTokens("#{", "}#", [""], "", MissingVarLog.Off, "{}");
 
         expect(result).toEqual([]);
     });
@@ -76,7 +76,7 @@ describe("basic functionality", () => {
     test("does not log missing variable to console when missingVarLog is 'off'", async () => {
         delete process.env["GREETING"];
         process.env["ACTOR"] = "world";
-        await replaceTokens("#{", "}#", ["test2.txt"], "", MissingVarLog.Off);
+        await replaceTokens("#{", "}#", ["test2.txt"], "", MissingVarLog.Off, "{}");
 
         const content = await fs.readFile('test2.txt', 'utf8');
         expect(content).toBe(" world");
@@ -87,7 +87,7 @@ describe("basic functionality", () => {
     test("logs missing variable warning to console when missingVarLog is 'warn'", async () => {
         delete process.env["GREETING"];
         process.env["ACTOR"] = "world";
-        await replaceTokens("#{", "}#", ["test2.txt"], "", MissingVarLog.Warn);
+        await replaceTokens("#{", "}#", ["test2.txt"], "", MissingVarLog.Warn, "{}");
 
         const content = await fs.readFile('test2.txt', 'utf8');
         expect(content).toBe(" world");
@@ -98,7 +98,7 @@ describe("basic functionality", () => {
     test("logs missing variable error to console when missingVarLog is 'error'", async () => {
         delete process.env["GREETING"];
         process.env["ACTOR"] = "world";
-        await replaceTokens("#{", "}#", ["test2.txt"], "", MissingVarLog.Error);
+        await replaceTokens("#{", "}#", ["test2.txt"], "", MissingVarLog.Error, "{}");
 
         const content = await fs.readFile('test2.txt', 'utf8');
         expect(content).toBe(" world");
@@ -109,7 +109,7 @@ describe("basic functionality", () => {
     test("does not log missing variable to console when missingVarLog is incorrect", async () => {
         delete process.env["GREETING"];
         process.env["ACTOR"] = "world";
-        await replaceTokens("#{", "}#", ["test2.txt"], "", 'NONE' as MissingVarLog);
+        await replaceTokens("#{", "}#", ["test2.txt"], "", 'NONE' as MissingVarLog, "{}");
 
         const content = await fs.readFile('test2.txt', 'utf8');
         expect(content).toBe(" world");
@@ -120,9 +120,18 @@ describe("basic functionality", () => {
     test("replaces token with value from missingVarDefault", async () => {
         delete process.env["GREETING"];
         process.env["ACTOR"] = "world";
-        await replaceTokens("#{", "}#", ["test2.txt"], "[MISSING_VALUE]", MissingVarLog.Off);
+        await replaceTokens("#{", "}#", ["test2.txt"], "[MISSING_VALUE]", MissingVarLog.Off, "{}");
 
         const content = await fs.readFile('test2.txt', 'utf8');
         expect(content).toBe("[MISSING_VALUE] world");
+    });
+    
+    test("replaces token with value from additionalVariables", async () => {
+        const additionalVariables = { GREETING: "Hello" };
+        process.env["ACTOR"] = "world";
+        await replaceTokens("#{", "}#", ["test2.txt"], "", MissingVarLog.Off, additionalVariables);
+
+        const content = await fs.readFile('test2.txt', 'utf8');
+        expect(content).toBe("Hello world");
     });
 });
